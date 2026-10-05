@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#171717">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Nkheim - Aide de jeu Mordheim">
+<title>Nkheim</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:#171717;color:#eee;font-family:system-ui,-apple-system,Arial,sans-serif;line-height:1.35}
+.app{width:min(720px,100%);margin:auto;padding:10px 12px 36px}
+header{text-align:center;margin:4px 0 12px}
+.eyebrow{font-size:11px;letter-spacing:2.5px;color:#999;text-transform:uppercase}
+h1{margin:4px 0 2px;letter-spacing:3px;font-size:26px;font-weight:700}
+header p{color:#aaa;font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.tab{border:1px solid #444;background:#242424;color:#eee;padding:12px 3px;border-radius:10px;font-size:12.5px;min-height:52px;cursor:pointer;font-weight:500;line-height:1.2}
+.tab.active{background:#3d3d3d;border-color:#888;font-weight:700}
+.view{display:none;background:#222;border:1px solid #3a3a3a;border-radius:12px;padding:14px}
+.view.active{display:block}
+h2{font-size:17px;margin:0 0 6px}
+.hint{font-size:12.5px;color:#aaa;margin:0 0 10px;line-height:1.4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:flex;flex-direction:column;gap:4px;color:#ccc;font-size:12px;font-weight:500}
+select,input[type="number"]{display:block;width:100%;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid #555;background:#111;color:#fff;font-size:15px}
+.section{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #333}
+.section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.section-title{font-size:13px;color:#8bc34a;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.result-box{background:#111;border:1px solid #333;border-radius:10px;padding:12px;margin-top:10px}
+.result-line{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #2a2a2a}
+.result-line:last-child{border-bottom:none}
+.result-line .label{color:#aaa;font-size:13px}
+.result-line .value{font-size:22px;font-weight:700}
+.result-line .value.auto{color:#8bc34a}
+.result-line .value.impossible{color:#f44336}
+.proba{font-size:12px;color:#888;margin-left:6px}
+.box{background:#1a1a1a;border:1px solid #333;border-radius:9px;padding:12px;margin-top:10px;font-size:13px;line-height:1.45}
+.box h3{margin:0 0 6px;font-size:14px;color:#ddd}
+.box ul{margin:0;padding-left:16px}
+.box li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th,td{border:1px solid #333;padding:5px 6px;text-align:left}
+th{background:#2a2a2a;color:#ccc}
+tr:nth-child(even){background:#1f1f1f}
+.quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.quick button{background:#2a2a2a;border:1px solid #444;color:#ccc;padding:6px 9px;border-radius:6px;font-size:11.5px;cursor:pointer}
+.subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.subtab{flex:1;min-width:80px;border:1px solid #444;background:#1e1e1e;color:#ccc;padding:9px 4px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer}
+.subtab.active{background:#3a3a3a;border-color:#777;color:#fff;font-weight:600}
+.subview{display:none}
+.subview.active{display:block}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.check-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc}
+.check-item input{width:18px;height:18px}
+.btn{display:block;width:100%;margin-top:10px;padding:11px;background:#3d3d3d;border:1px solid #666;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;text-align:center}
+.btn:active{background:#555}
+.btn-green{background:#2e7d32;border-color:#4caf50}
+.roller{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.roller button{background:#333;border:1px solid #555;color:#eee;padding:10px 14px;border-radius:8px;font-size:14px;cursor:pointer;min-width:60px}
+.roller-result{text-align:center;font-size:28px;font-weight:700;margin-top:8px;min-height:36px}
+.weapon-note{margin-top:8px;padding:8px 10px;background:#1a1a1a;border:1px solid #333;border-radius:8px;font-size:12.5px;color:#bbb;line-height:1.4;min-height:20px}
+.mini-roller{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #333}
+.mini-roller button{background:#333;border:1px solid #555;color:#eee;padding:8px 12px;border-radius:7px;font-size:13px;cursor:pointer;min-width:52px}
+.mini-roller-result{text-align:center;font-size:22px;font-weight:700;margin-top:6px;min-height:28px;color:#8bc34a}
+footer{text-align:center;color:#666;font-size:11px;line-height:1.4;margin:16px 2px 0}
+@media(max-width:420px){
+  .tab{font-size:11.5px;min-height:50px;padding:10px 2px}
+  h1{font-size:22px}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div class="eyebrow">Aide de jeu</div>
+  <h1>NKHEIM</h1>
+  <p>V8.2 · Aide de jeu Mordheim</p>
+</header>
+
+<nav class="tabs">
+  <button type="button" class="tab active" data-view="cac">⚔️ CAC</button>
+  <button type="button" class="tab" data-view="tir">🏹 Tir</button>
+  <button type="button" class="tab" data-view="critique">💥 Critique</button>
+  <button type="button" class="tab" data-view="pique">🩸 Ça pique !</button>
+  <button type="button" class="tab" data-view="apres">📋 Après-partie</button>
+  <button type="button" class="tab" data-view="des">🎲 Dés</button>
+</nav>
+
+<!-- ========== CAC ========== -->
+<section id="cac" class="view active">
+  <h2>Corps à corps</h2>
+  <p class="hint">Attaquant vs Défenseur — Toucher, Blesser et Sauvegarde en un seul endroit.</p>
+
+  <div class="section">
+    <div class="section-title">Attaquant</div>
+    <div class="grid3">
+      <label>CC<select id="cacA_cc"></select></label>
+      <label>Force<select id="cacA_s"></select></label>
+      <label>Arme<select id="cacA_weapon"></select></label>
+    </div>
+    <div class="weapon-note" id="cacWeaponNote">Sélectionne une arme pour voir ses règles spéciales.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Défenseur</div>
+    <div class="grid3">
+      <label>CC<select id="cacD_cc"></select></label>
+      <label>Endurance<select id="cacD_t"></select></label>
+      <label>Sauvegarde<select id="cacD_save"></select></label>
+    </div>
+  </div>
+
+  <div class="result-box" id="cacResults">
+    <div class="result-line"><span class="label">Toucher</span><span class="value" id="cacHit">—</span></div>
+    <div class="result-line"><span class="label">Blesser</span><span class="value" id="cacWound">—</span></div>
+    <div class="result-line"><span class="label">Sauvegarde</span><span class="value" id="cacSave">—</span></div>
+  </div>
+
+  <button type="button" class="btn btn-green" id="cacToCrit" style="display:none">Voir le Critique de l’arme →</button>
+
+  <div class="mini-roller" data-target="cacDiceResult">
+    <button type="button" data-dice="1d6">D6</button>
+    <button type="button" data-dice="2d6">2D6</button>
+    <button type="button" data-dice="d66">D66</button>
+  </div>
+  <div class="mini-roller-result" id="cacDiceResult">—</div>
+</section>
+
+<!-- ========== TIR ========== -->
+<section id="tir" class="view">
+  <h2>Tir</h2>
+  <p class="hint">CT + modificateurs + Force de l’arme vs Endurance + Sauvegarde.</p>
+
+  <div class="section">
+    <div class="section-title">Tireur</div>
+    <div class="grid">
+      <label>CT<select id="tir_ct"></select></label>
+      <label>Modificateur<select id="tir_mod"></select></label>
+    </div>
+    <div class="grid" style="margin-top:8px">
+      <label>Force de l’arme<select id="tir_s"></select></label>
+      <label>Arme<select id="tir_weapon"></select></label>
+    </div>
+    <div class="weapon-note" id="tirWeaponNote">Sélectionne une arme pour voir ses règles spéciales.</div>
+    <div class="quick" id="tirQuick">
+      <button type="button" data-mod="-1">Couverture −1</button>
+      <button type="button" data-mod="-1">Mouvement −1</button>
+      <button type="button" data-mod="-1">Longue portée −1</button>
+      <button type="button" data-mod="1">Grande cible +1</button>
+      <button type="button" data-mod="0">Reset</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cible</div>
+    <div class="grid">
+      <label>Endurance<select id="tir_t"></select></label>
+      <label>Sauvegarde<select id="tir_save"></select></label>
+    </div>
+  </div>
+
+  <div class="result-box">
+    <div class="result-line"><span class="label">Toucher</span><span class="value" id="tirHit">—</span></div>
+    <div class="result-line"><span class="label">Blesser</span><span class="value" id="tirWound">—</span></div>
+    <div class="result-line"><span class="label">Sauvegarde</span><span class="value" id="tirSaveRes">—</span></div>
+  </div>
+
+  <button type="button" class="btn btn-green" id="tirToCrit" style="display:none">Voir le Critique de l’arme →</button>
+
+  <div class="mini-roller" data-target="tirDiceResult">
+    <button type="button" data-dice="1d6">D6</button>
+    <button type="button" data-dice="2d6">2D6</button>
+    <button type="button" data-dice="d66">D66</button>
+  </div>
+  <div class="mini-roller-result" id="tirDiceResult">—</div>
+</section>
+
+<!-- ========== CRITIQUE ========== -->
+<section id="critique" class="view">
+  <h2>Coups Critiques</h2>
+  <p class="hint">Règle optionnelle : critiques différents selon le type d’arme. Un 6 pour blesser provoque un critique (sauf si tu avais besoin de 6).</p>
+
+  <label>Type d’arme
+    <select id="critType">
+      <option value="bladed">Armes tranchantes (épée, hache…)</option>
+      <option value="bludgeon">Armes contondantes (masse, marteau, fléau…)</option>
+      <option value="missile">Armes de jet / tir</option>
+      <option value="basic">Critique de base (livre de règles)</option>
+    </select>
+  </label>
+
+  <div class="box" id="critContent" style="margin-top:12px"></div>
+</section>
+
+<!-- ========== ÇA PIQUE ========== -->
+<section id="pique" class="view">
+  <h2>Ça pique !</h2>
+  <p class="hint">Blessure grave pendant la partie + règles spéciales + seuils de déroute.</p>
+
+  <div class="box">
+    <h3>Tableau de base (Injury)</h3>
+    <ul>
+      <li><strong>1-2 · Mis à terre</strong> — Face vers le haut. Rampe 2". Se relève à la récupération.</li>
+      <li><strong>3-4 · Assommé</strong> — Face vers le bas. Ne fait rien. Devient Mis à terre à la récupération.</li>
+      <li><strong>5-6 · Hors de combat</strong> — Retiré de la table.</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h3>Règles spéciales (coche ce qui s’applique)</h3>
+    <div class="check-grid">
+      <label class="check-item"><input type="checkbox" id="sp_dwarf"> Nain</label>
+      <label class="check-item"><input type="checkbox" id="sp_vampire"> Vampire</label>
+      <label class="check-item"><input type="checkbox" id="sp_helmet"> Casque</label>
+      <label class="check-item"><input type="checkbox" id="sp_undead"> Mort-vivant</label>
+    </div>
+    <div id="specialNotes" style="margin-top:10px;font-size:13px;color:#bbb;line-height:1.45"></div>
+  </div>
+
+  <div class="box">
+    <h3>Seuils de déroute (Rout)</h3>
+    <p style="margin-bottom:6px">Test de déroute quand tu as perdu le pourcentage suivant de ta bande de départ :</p>
+    <table>
+      <tr><th>Taille de bande</th><th>Seuil</th></tr>
+      <tr><td>1-4</td><td>1 figurine hors de combat</td></tr>
+      <tr><td>5-7</td><td>2 figurines</td></tr>
+      <tr><td>8-10</td><td>3 figurines</td></tr>
+      <tr><td>11+</td><td>25 % (arrondi au supérieur)</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12.5px;color:#aaa">Le test se fait avec le Commandement du leader (ou du héros le plus proche si le leader est hors de combat).</p>
+  </div>
+</section>
+
+<!-- ========== APRÈS-PARTIE ========== -->
+<section id="apres" class="view">
+  <h2>Après-partie</h2>
+  <div class="subtabs">
+    <button type="button" class="subtab active" data-sub="blessures">🩸 Blessures</button>
+    <button type="button" class="subtab" data-sub="exploration">🗺️ Exploration</button>
+    <button type="button" class="subtab" data-sub="pierres">💎 Pierres</button>
+  </div>
+
+  <div id="sub-blessures" class="subview active">
+    <p class="hint">Pour chaque Héros hors de combat, lance un D66.</p>
+    <div class="box" style="max-height:360px;overflow-y:auto">
+      <table>
+        <tr><th>D66</th><th>Résultat</th></tr>
+        <tr><td>11-15</td><td><strong>Mort</strong> — Retiré. Équipement perdu.</td></tr>
+        <tr><td>16-21</td><td><strong>Blessures multiples</strong> — D6 fois sur ce tableau.</td></tr>
+        <tr><td>22</td><td><strong>Jambe blessée</strong> — −1 Mouvement.</td></tr>
+        <tr><td>23</td><td><strong>Bras blessé</strong> — 1 = amputation / 2-6 = rate 1 partie.</td></tr>
+        <tr><td>24</td><td><strong>Folie</strong> — 1-3 Stupidité / 4-6 Frénésie.</td></tr>
+        <tr><td>25</td><td><strong>Jambe broyée</strong> — 1 = plus de course / 2-6 = rate 1 partie.</td></tr>
+        <tr><td>26</td><td><strong>Poitrine</strong> — −1 Endurance.</td></tr>
+        <tr><td>31</td><td><strong>Borgne</strong> — −1 CT.</td></tr>
+        <tr><td>32</td><td><strong>Vieille blessure</strong> — D6 avant partie : 1 = ne joue pas.</td></tr>
+        <tr><td>33</td><td><strong>Main blessée</strong> — −1 CC.</td></tr>
+        <tr><td>34</td><td><strong>Nerf</strong> — −1 Initiative.</td></tr>
+        <tr><td>35</td><td><strong>Blessure profonde</strong> — Rate D3 parties.</td></tr>
+        <tr><td>36</td><td><strong>Dépouillé</strong> — Équipement perdu.</td></tr>
+        <tr><td>41-55</td><td><strong>Plein rétablissement</strong></td></tr>
+        <tr><td>56</td><td><strong>Haine amère</strong></td></tr>
+        <tr><td>61</td><td><strong>Capturé</strong></td></tr>
+        <tr><td>62</td><td><strong>Endurci</strong> — Immunisé à la peur.</td></tr>
+        <tr><td>63</td><td><strong>Cicatrice horrible</strong> — Cause la peur.</td></tr>
+        <tr><td>64-66</td><td><strong>+1 Expérience</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div id="sub-exploration" class="subview">
+    <p class="hint">1 dé par Héros survivant. Choisis le nombre de dés identiques + la face.</p>
+    <div class="grid">
+      <label>Nombre de dés identiques
+        <select id="expCount">
+          <option value="2">Double (2)</option>
+          <option value="3">Triple (3)</option>
+          <option value="4">Carré (4)</option>
+          <option value="5">Quinte (5)</option>
+          <option value="6">Sixain (6)</option>
+        </select>
+      </label>
+      <label>Valeur du dé
+        <select id="expValue"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+      </label>
+    </div>
+    <div class="result-box" style="margin-top:12px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px" id="expResult">—</div>
+      <div style="font-size:13px;color:#bbb" id="expDetail"></div>
+    </div>
+  </div>
+
+  <div id="sub-pierres" class="subview">
+    <p class="hint">Total des dés d’exploration → nombre de Pierres de Malepierre.</p>
+    <div class="grid">
+      <label>Total des dés
+        <input type="number" id="shardTotal" min="1" max="60" value="12" style="text-align:center;font-size:17px">
+      </label>
+      <label>Résultat
+        <div class="result-box" style="margin:0;padding:10px;text-align:center">
+          <div style="font-size:26px;font-weight:700" id="shardResult">—</div>
+          <div style="font-size:12px;color:#aaa" id="shardNote"></div>
+        </div>
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- ========== DÉS ========== -->
+<section id="des" class="view">
+  <h2>Lanceur de dés</h2>
+  <p class="hint">Optionnel — pour ceux qui préfèrent ne pas sortir les dés physiques.</p>
+  <div class="roller" data-target="diceResult">
+    <button type="button" data-dice="1d6">D6</button>
+    <button type="button" data-dice="2d6">2D6</button>
+    <button type="button" data-dice="d66">D66</button>
+    <button type="button" data-dice="1d3">D3</button>
+  </div>
+  <div class="roller-result" id="diceResult">—</div>
+</section>
+
+<footer>
+  <p>Nkheim V8.2 · Les dés physiques restent prioritaires</p>
+</footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+// === TABLES ===
+const HIT_TABLE = [null,
+  [null,4,4,5,5,5,5,5,5,5,5],[null,3,4,4,4,5,5,5,5,5,5],[null,3,3,4,4,4,4,5,5,5,5],
+  [null,3,3,3,4,4,4,4,4,5,5],[null,3,3,3,3,4,4,4,4,4,4],[null,3,3,3,3,3,4,4,4,4,4],
+  [null,3,3,3,3,3,3,4,4,4,4],[null,3,3,3,3,3,3,3,4,4,4],[null,3,3,3,3,3,3,3,3,4,4],
+  [null,3,3,3,3,3,3,3,3,3,4]];
+
+const WOUND_TABLE = [null,
+  [null,4,5,6,6,null,null,null,null,null,null],[null,3,4,5,6,6,null,null,null,null,null],
+  [null,2,3,4,5,6,6,null,null,null,null],[null,2,2,3,4,5,6,6,null,null,null],
+  [null,2,2,2,3,4,5,6,6,null,null],[null,2,2,2,2,3,4,5,6,6,null],
+  [null,2,2,2,2,2,3,4,5,6,6],[null,2,2,2,2,2,2,3,4,5,6],
+  [null,2,2,2,2,2,2,2,3,4,5],[null,2,2,2,2,2,2,2,2,3,4]];
+
+const MELEE_WEAPONS = {
+  "Dague": {s:0, type:"bladed", saveMod:0, special:"Arme de base. +1 sauvegarde d’armure de l’ennemi (plus difficile à blesser à travers l’armure)."},
+  "Épée": {s:0, type:"bladed", saveMod:0, special:"Parry : peut tenter de parer un coup (6+ annule un hit)."},
+  "Hache": {s:0, type:"bladed", saveMod:0, special:"Aucun effet spécial particulier (selon édition)."},
+  "Masse / Marteau / Gourdin": {s:0, type:"bludgeon", saveMod:0, special:"Contondant. Utile contre les armures via les critiques."},
+  "Fléau": {s:0, type:"bludgeon", saveMod:0, special:"+1 Force à l’impact. Frappe en dernier si pas chargé."},
+  "Arme à 2 mains": {s:2, type:"bladed", saveMod:0, special:"+2 Force. Frappe en dernier (sauf règle contraire)."},
+  "Hallebarde": {s:1, type:"bladed", saveMod:0, special:"+1 Force. Peut frapper en premier au premier tour de combat."},
+  "Lance": {s:0, type:"bladed", saveMod:0, special:"Frappe en premier au tour où tu charges."},
+  "Morgenstern": {s:0, type:"bludgeon", saveMod:0, special:"+1 Force au premier tour de combat."},
+  "Poings / Improvisée": {s: -1, type:"bludgeon", saveMod:0, special:"Force -1. Ennemi a +1 sauvegarde d’armure."}
+};
+
+const RANGED_WEAPONS = {
+  "Arc": {s:3, type:"missile", saveMod:0, special:"Force 3. Pas de malus de mouvement pour tirer (selon édition)."},
+  "Arc long / Elfique": {s:3, type:"missile", saveMod:0, special:"Force 3. Portée longue. Souvent -1 pour se déplacer et tirer."},
+  "Arbalète": {s:4, type:"missile", saveMod:0, special:"Force 4. Doit être rechargée (ne peut pas bouger et tirer la même phase)."},
+  "Pistolet": {s:4, type:"missile", saveMod:0, special:"Force 4. Peut tirer en CAC au premier tour. Portée courte."},
+  "Paire de pistolets": {s:4, type:"missile", saveMod:0, special:"Force 4. Deux tirs. Peut être utilisée en CAC."},
+  "Handgun / Fusil": {s:4, type:"missile", saveMod:0, special:"Force 4. Longue portée. Souvent lourd à recharger."},
+  "Blunderbuss": {s:3, type:"missile", saveMod:0, special:"Force 3. Touche plusieurs cibles dans un cône (règles spéciales)."},
+  "Couteaux de lancer": {s:0, type:"missile", saveMod:0, special:"Utilise la Force du lanceur. Portée courte."},
+  "Javelot / Sagaie": {s:0, type:"missile", saveMod:0, special:"Utilise la Force du lanceur."}
+};
+
+const WEAPONS = Object.assign({}, MELEE_WEAPONS, RANGED_WEAPONS);
+
+const CRIT_TEXTS = {
+  basic: `<h3>Critique de base</h3>
+    <ul>
+      <li><strong>1-2 · Partie vitale</strong> — 2 blessures. Sauvegarde avant doublement.</li>
+      <li><strong>3-4 · Point exposé</strong> — 2 blessures. Pas de sauvegarde.</li>
+      <li><strong>5-6 · Frappe magistrale</strong> — 2 blessures. Pas de sauvegarde. +2 aux Blessures graves.</li>
+    </ul>`,
+  bladed: `<h3>Armes tranchantes</h3>
+    <ul>
+      <li><strong>1-2 · Blessure superficielle</strong> — Pas de sauvegarde d’armure.</li>
+      <li><strong>3-4 · Tempête de lames</strong> — 2 blessures.</li>
+      <li><strong>5-6 · Frappe déchirante</strong> — 2 blessures + ignore les sauvegardes.</li>
+    </ul>`,
+  bludgeon: `<h3>Armes contondantes</h3>
+    <ul>
+      <li><strong>1-2 · Assommé</strong> — La cible ne peut pas frapper ce tour si elle n’a pas encore agi.</li>
+      <li><strong>3-4 · Coup de massue</strong> — Ignore les sauvegardes d’armure et de casque.</li>
+      <li><strong>5 · Balayage</strong> — L’arme de la cible est projetée (ou désarmée).</li>
+      <li><strong>6 · Coup écrasant</strong> — 2 blessures + ignore les sauvegardes.</li>
+    </ul>`,
+  missile: `<h3>Armes de jet / tir</h3>
+    <ul>
+      <li><strong>1-2 · Point faible</strong> — Ignore l’armure.</li>
+      <li><strong>3-4 · Tir précis</strong> — 2 blessures.</li>
+      <li><strong>5-6 · Tir mortel</strong> — 2 blessures + ignore les sauvegardes.</li>
+    </ul>`
+};
+
+const EXPLORATION = {
+  '2-1':{name:'Puits',detail:'Puits pollué. Héros : D6 → 1-2 rate prochaine partie, 3-6 = 1 pierre.'},
+  '2-2':{name:'Boutique',detail:'D6 gc. Sur 1 : Lucky Charm aussi.'},
+  '2-3':{name:'Cadavre',detail:'D6 : 1-2 = D6 gc, 3 = Dague, 4 = Hache, 5 = Épée, 6 = Armure légère.'},
+  '2-4':{name:'Égaré',detail:'Survivant. Effets selon race de la bande.'},
+  '2-5':{name:'Chariot renversé',detail:'Butin variable.'},
+  '2-6':{name:'Masures en ruine',detail:'D6 gc.'},
+  '3-1':{name:'Taverne',detail:'Test Cd du leader : succès 4D6 gc / échec D6 gc.'},
+  '3-2':{name:'Forge',detail:'Butin d’armes.'},
+  '3-3':{name:'Prisonniers',detail:'Selon race (or, henchman, zombies…).'},
+  '3-4':{name:'Fléchier',detail:'Arcs / flèches.'},
+  '3-5':{name:'Halle du marché',detail:'2D6 gc.'},
+  '3-6':{name:'Rendre un service',detail:'Hired Sword gratuit prochaine partie.'},
+  '4-1':{name:'Armurier à poudre',detail:'Pistolets, handgun…'},
+  '4-2':{name:'Sanctuaire',detail:'Or + arme bénie possible.'},
+  '4-3':{name:'Maison de ville',detail:'3D6 gc.'},
+  '4-4':{name:'Armurier',detail:'Boucliers, casques, armures.'},
+  '4-5':{name:'Cimetière',detail:'Butin ou XP selon bande.'},
+  '4-6':{name:'Catacombes',detail:'Jusqu’à 3 guerriers se placent librement au sol (>8").'},
+  '5-1':{name:'Maison du prêteur',detail:'Gros butin possible.'},
+  '5-2':{name:'Labo d’alchimiste',detail:'Objets rares / potions.'},
+  '5-3':{name:'Joaillier',detail:'Or et objets de valeur.'},
+  '5-4':{name:'Maison de marchand',detail:'Bon butin.'},
+  '5-5':{name:'Bâtiment détruit',detail:'Fouille.'},
+  '5-6':{name:'Entrée des Catacombes',detail:''},
+  '6-1':{name:'Le Puits',detail:'Très dangereux / grosse récompense.'},
+  '6-2':{name:'Trésor caché',detail:'Gros butin.'},
+  '6-3':{name:'Forge naine',detail:'Équipement de qualité.'},
+  '6-4':{name:'Bande massacrée',detail:'Beaucoup d’équipement.'},
+  '6-5':{name:'Arène de combat',detail:'Manuel d’entraînement.'},
+  '6-6':{name:'Villa noble',detail:'Riche butin.'}
+};
+
+function byId(id){return document.getElementById(id)}
+function fillSelect(id, values, format){
+  const el = byId(id); el.innerHTML = '';
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = String(v);
+    o.textContent = format ? format(v) : String(v);
+    el.appendChild(o);
+  });
+}
+
+// Populate selects
+['cacA_cc','cacD_cc','cacA_s','cacD_t','tir_ct','tir_s','tir_t'].forEach(id => fillSelect(id,[1,2,3,4,5,6,7,8,9,10]));
+fillSelect('cacD_save',[2,3,4,5,6,7], v => v === 7 ? '—' : v+'+');
+fillSelect('tir_save',[2,3,4,5,6,7], v => v === 7 ? '—' : v+'+');
+const mods = []; for(let i=-6;i<=6;i++) mods.push(i);
+fillSelect('tir_mod', mods, v => (v>0?'+':'')+v);
+
+// Weapons - separated
+function fillWeaponSelect(sel, weapons){
+  sel.innerHTML = '';
+  Object.keys(weapons).forEach(name => {
+    const o = document.createElement('option');
+    o.value = name; o.textContent = name;
+    sel.appendChild(o);
+  });
+}
+fillWeaponSelect(byId('cacA_weapon'), MELEE_WEAPONS);
+fillWeaponSelect(byId('tir_weapon'), RANGED_WEAPONS);
+
+// Defaults
+byId('cacA_cc').value='3'; byId('cacD_cc').value='3';
+byId('cacA_s').value='3'; byId('cacD_t').value='3';
+byId('cacD_save').value='6';
+byId('tir_ct').value='3'; byId('tir_mod').value='0';
+byId('tir_s').value='3'; byId('tir_t').value='3'; byId('tir_save').value='6';
+
+function formatResult(val){
+  if(val === null) return {text:'—', cls:'impossible'};
+  if(val <= 1) return {text:'Auto', cls:'auto'};
+  return {text: val+'+', cls:''};
+}
+
+function toHit(a, d){ return (a>=1&&a<=10&&d>=1&&d<=10) ? HIT_TABLE[a][d] : null; }
+function toWound(s, t){ return (s>=1&&s<=10&&t>=1&&t<=10) ? WOUND_TABLE[s][t] : null; }
+function saveNeeded(base, mod){
+  if(base >= 7) return null; // no save
+  let t = base + mod;
+  if(t <= 1) return 2;
+  if(t > 6) return null;
+  return t;
+}
+function strengthSaveMod(s){
+  if(s <= 3) return 0;
+  if(s === 4) return -1;
+  if(s === 5) return -2;
+  if(s === 6) return -3;
+  if(s === 7) return -4;
+  if(s === 8) return -5;
+  return -6;
+}
+
+function updateCAC(){
+  const aCC = +byId('cacA_cc').value;
+  const dCC = +byId('cacD_cc').value;
+  const baseS = +byId('cacA_s').value;
+  const weaponName = byId('cacA_weapon').value;
+  const weapon = MELEE_WEAPONS[weaponName] || {s:0, type:"basic", saveMod:0, special:""};
+  const s = Math.min(10, Math.max(1, baseS + (weapon.s || 0)));
+  byId('cacWeaponNote').textContent = weapon.special || 'Aucune règle spéciale particulière.';
+  const t = +byId('cacD_t').value;
+  const baseSave = +byId('cacD_save').value;
+
+  const hit = toHit(aCC, dCC);
+  const wound = toWound(s, t);
+  const saveMod = strengthSaveMod(s) + (weapon.saveMod || 0);
+  const save = saveNeeded(baseSave, saveMod);
+
+  const h = formatResult(hit);
+  const w = formatResult(wound);
+  const sv = formatResult(save);
+
+  byId('cacHit').textContent = h.text; byId('cacHit').className = 'value ' + h.cls;
+  byId('cacWound').textContent = w.text; byId('cacWound').className = 'value ' + w.cls;
+  byId('cacSave').textContent = sv.text; byId('cacSave').className = 'value ' + sv.cls;
+
+  // Show crit button if wound possible
+  byId('cacToCrit').style.display = (wound !== null && wound <= 6) ? 'block' : 'none';
+  byId('cacToCrit').dataset.type = weapon.type || 'basic';
+}
+
+function updateTir(){
+  const ct = +byId('tir_ct').value;
+  const mod = +byId('tir_mod').value;
+  const t = +byId('tir_t').value;
+  const baseSave = +byId('tir_save').value;
+  const weaponName = byId('tir_weapon').value;
+  const weapon = RANGED_WEAPONS[weaponName] || {s:3, type:"missile", saveMod:0, special:""};
+  byId('tirWeaponNote').textContent = weapon.special || 'Aucune règle spéciale particulière.';
+  // Auto-set Force from weapon
+  if(weapon.s !== undefined && weapon.s > 0){
+    byId('tir_s').value = String(Math.min(10, Math.max(1, weapon.s)));
+  }
+  const s = +byId('tir_s').value;
+
+  let hitNeeded = 7 - ct - mod;
+  if(hitNeeded > 6) hitNeeded = null;
+  else if(hitNeeded < 1) hitNeeded = 1;
+
+  const wound = toWound(s, t);
+  const saveMod = strengthSaveMod(s);
+  const save = saveNeeded(baseSave, saveMod);
+
+  const h = formatResult(hitNeeded);
+  const w = formatResult(wound);
+  const sv = formatResult(save);
+
+  byId('tirHit').textContent = h.text; byId('tirHit').className = 'value ' + h.cls;
+  byId('tirWound').textContent = w.text; byId('tirWound').className = 'value ' + w.cls;
+  byId('tirSaveRes').textContent = sv.text; byId('tirSaveRes').className = 'value ' + sv.cls;
+
+  byId('tirToCrit').style.display = (wound !== null && wound <= 6) ? 'block' : 'none';
+  byId('tirToCrit').dataset.type = weapon.type || 'missile';
+}
+
+function updateCrit(){
+  const type = byId('critType').value;
+  byId('critContent').innerHTML = CRIT_TEXTS[type] || CRIT_TEXTS.basic;
+}
+
+function updateSpecials(){
+  const notes = [];
+  if(byId('sp_dwarf').checked) notes.push('• <strong>Nain</strong> : ignore souvent les effets de stun / a des règles spéciales selon édition.');
+  if(byId('sp_vampire').checked) notes.push('• <strong>Vampire</strong> : régénération / ne peut pas être mis Out of Action aussi facilement selon règles.');
+  if(byId('sp_helmet').checked) notes.push('• <strong>Casque</strong> : sauvegarde spéciale 4+ contre Stun (transforme souvent en Knocked Down).');
+  if(byId('sp_undead').checked) notes.push('• <strong>Mort-vivant</strong> : immunisé à la psychologie, règles spéciales de récupération.');
+  byId('specialNotes').innerHTML = notes.length ? notes.join('<br>') : '<span style="color:#666">Aucune règle spéciale cochée.</span>';
+}
+
+function updateExploration(){
+  const key = byId('expCount').value + '-' + byId('expValue').value;
+  const loc = EXPLORATION[key];
+  byId('expResult').textContent = loc ? loc.name : '—';
+  byId('expDetail').textContent = loc ? loc.detail : '';
+}
+
+function updateShards(){
+  const total = +byId('shardTotal').value || 0;
+  let n = 0;
+  if(total>=1&&total<=5)n=1; else if(total<=11)n=2; else if(total<=17)n=3;
+  else if(total<=24)n=4; else if(total<=30)n=5; else if(total<=35)n=6; else if(total>=36)n=7;
+  byId('shardResult').textContent = n || '—';
+  byId('shardNote').textContent = n ? (n>1 ? 'pierres de Malepierre' : 'pierre de Malepierre') : '';
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b===btn));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id===btn.dataset.view));
+  });
+});
+
+// Subtabs
+document.querySelectorAll('.subtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.subtab').forEach(b => b.classList.toggle('active', b===btn));
+    document.querySelectorAll('.subview').forEach(v => v.classList.toggle('active', v.id==='sub-'+btn.dataset.sub));
+  });
+});
+
+// Listeners
+['cacA_cc','cacD_cc','cacA_s','cacD_t','cacD_save','cacA_weapon'].forEach(id => byId(id).addEventListener('change', updateCAC));
+['tir_ct','tir_mod','tir_s','tir_t','tir_save','tir_weapon'].forEach(id => byId(id).addEventListener('change', updateTir));
+byId('critType').addEventListener('change', updateCrit);
+['sp_dwarf','sp_vampire','sp_helmet','sp_undead'].forEach(id => byId(id).addEventListener('change', updateSpecials));
+['expCount','expValue'].forEach(id => byId(id).addEventListener('change', updateExploration));
+byId('shardTotal').addEventListener('input', updateShards);
+
+byId('tirQuick').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-mod]'); if(!btn) return;
+  const m = btn.dataset.mod;
+  if(m === '0') byId('tir_mod').value = '0';
+  else {
+    const cur = +byId('tir_mod').value;
+    byId('tir_mod').value = String(Math.max(-6, Math.min(6, cur + Number(m))));
+  }
+  updateTir();
+});
+
+// Go to crit
+function goToCrit(type){
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view==='critique'));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='critique'));
+  byId('critType').value = type || 'basic';
+  updateCrit();
+}
+byId('cacToCrit').addEventListener('click', () => goToCrit(byId('cacToCrit').dataset.type));
+byId('tirToCrit').addEventListener('click', () => goToCrit(byId('tirToCrit').dataset.type));
+
+// Dice roller (global + mini rollers in CAC/Tir)
+function rollDice(type){
+  if(type === '1d6') return Math.floor(Math.random()*6)+1;
+  if(type === '2d6') return (Math.floor(Math.random()*6)+1) + (Math.floor(Math.random()*6)+1);
+  if(type === 'd66') return '' + (Math.floor(Math.random()*6)+1) + (Math.floor(Math.random()*6)+1);
+  if(type === '1d3') return Math.floor(Math.random()*3)+1;
+  return '—';
+}
+document.querySelectorAll('.roller, .mini-roller').forEach(roller => {
+  roller.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-dice]'); if(!btn) return;
+    const type = btn.dataset.dice;
+    const res = rollDice(type);
+    // Find target result element
+    const targetId = roller.dataset.target || 'diceResult';
+    const target = byId(targetId);
+    if(target) target.textContent = res;
+  });
+});
+
+// Init
+updateCAC(); updateTir(); updateCrit(); updateSpecials(); updateExploration(); updateShards();
+})();
+</script>
+</body>
+</html>
