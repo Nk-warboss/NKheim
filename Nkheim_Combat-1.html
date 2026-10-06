@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#171717">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Nkheim - Aide de combat Mordheim">
+<link rel="manifest" id="manifest">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23171717' width='100' height='100' rx='20'/><text y='.9em' font-size='70' x='15'>⚔️</text></svg>">
+<title>Nkheim</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:#171717;color:#eee;font-family:system-ui,-apple-system,Arial,sans-serif;line-height:1.35}
+.app{width:min(720px,100%);margin:auto;padding:10px 12px 36px}
+header{text-align:center;margin:4px 0 12px}
+.eyebrow{font-size:11px;letter-spacing:2.5px;color:#999;text-transform:uppercase}
+h1{margin:4px 0 2px;letter-spacing:3px;font-size:26px;font-weight:700}
+header p{color:#aaa;font-size:13px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.tab{border:1px solid #444;background:#242424;color:#eee;padding:12px 4px;border-radius:10px;font-size:13px;min-height:50px;cursor:pointer;font-weight:500}
+.tab.active{background:#3d3d3d;border-color:#888;font-weight:700}
+.view{display:none;background:#222;border:1px solid #3a3a3a;border-radius:12px;padding:14px}
+.view.active{display:block}
+h2{font-size:17px;margin:0 0 6px}
+.hint{font-size:12.5px;color:#aaa;margin:0 0 10px;line-height:1.4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:flex;flex-direction:column;gap:4px;color:#ccc;font-size:12px;font-weight:500}
+select,input[type="number"]{display:block;width:100%;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid #555;background:#111;color:#fff;font-size:15px}
+.section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #333}
+.section:last-child{border-bottom:none}
+.section-title{font-size:12px;color:#8bc34a;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.crit-mode{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.crit-mode label{flex:1;min-width:120px;flex-direction:row;align-items:center;justify-content:center;gap:6px;padding:10px 8px;background:#1a1a1a;border:1px solid #444;border-radius:8px;font-size:12.5px;color:#ccc;cursor:pointer}
+.crit-mode input{width:16px;height:16px;accent-color:#8bc34a}
+.crit-mode label:has(input:checked){border-color:#8bc34a;background:#1e2a1e;color:#eee;font-weight:600}
+.weapon-note{margin-top:8px;padding:8px 10px;background:#1a1a1a;border:1px solid #333;border-radius:8px;font-size:12.5px;color:#bbb;line-height:1.4}
+.target-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2a2a2a;font-size:14px}
+.target-row:last-child{border-bottom:none}
+.target-row .t-label{color:#aaa}
+.target-row .t-val{font-size:20px;font-weight:700}
+.target-row .t-val.ok{color:#8bc34a}
+.target-row .t-val.bad{color:#f44336}
+.step{background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:12px;margin-top:12px}
+.step h3{font-size:14px;margin:0 0 8px;color:#ddd}
+.step.locked{opacity:0.4;pointer-events:none}
+.step.done{border-color:#4caf50}
+.step-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.step-actions input[type="number"]{width:72px;min-height:44px;text-align:center;font-size:18px;font-weight:700}
+.roll-btn{background:#333;border:1px solid #555;color:#eee;padding:10px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.roll-btn:active{background:#444}
+.outcome{margin-top:10px;padding:10px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;display:none}
+.outcome.success{display:block;background:#1b5e20;border:1px solid #4caf50;color:#c8e6c9}
+.outcome.fail{display:block;background:#4a1515;border:1px solid #f44336;color:#ffcdd2}
+.outcome.info{display:block;background:#1a237e;border:1px solid #5c6bc0;color:#c5cae9}
+.injury-box{margin-top:10px;padding:12px;background:#111;border:1px solid #444;border-radius:8px;display:none}
+.injury-box.show{display:block}
+.injury-box h4{margin:0 0 6px;font-size:13px;color:#8bc34a}
+.specials{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.specials label{flex-direction:row;align-items:center;gap:5px;font-size:12.5px;color:#ccc}
+.specials input{width:16px;height:16px}
+.btn{display:block;width:100%;margin-top:10px;padding:11px;background:#3d3d3d;border:1px solid #666;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;text-align:center}
+.btn-green{background:#2e7d32;border-color:#4caf50}
+.btn-muted{background:#2a2a2a;border-color:#444;font-size:13px}
+.box{background:#1a1a1a;border:1px solid #333;border-radius:9px;padding:12px;margin-top:10px;font-size:13px;line-height:1.45}
+.box h3{margin:0 0 6px;font-size:14px;color:#ddd}
+.box ul{margin:0;padding-left:16px}
+.box li{margin-bottom:4px}
+.install-box{margin-top:18px;padding:14px;background:#1c1c1c;border:1px solid #3a3a3a;border-radius:10px;text-align:center}
+.install-box p{font-size:12.5px;color:#aaa;margin-bottom:6px;line-height:1.4}
+.install-btn{display:none;background:#4caf50;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px}
+.install-box .version{font-size:11px;color:#777;margin-top:8px}
+.history{margin-top:14px;padding-top:12px;border-top:1px solid #333}
+.history h3{font-size:13px;color:#8bc34a;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.5px}
+.hist-item{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;line-height:1.4}
+.hist-item .hist-title{font-weight:600;color:#ddd;margin-bottom:2px}
+.hist-item .hist-detail{color:#999}
+.hist-item.win{border-left:3px solid #4caf50}
+.hist-item.lose{border-left:3px solid #f44336}
+.hist-empty{color:#666;font-size:12.5px}
+footer{text-align:center;color:#666;font-size:11px;margin:16px 2px 0}
+@media(max-width:420px){
+  h1{font-size:22px}
+  .tab{font-size:12px;min-height:48px}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div class="eyebrow">Aide de combat</div>
+  <h1>NKHEIM</h1>
+  <p>V10.6 · Flux de combat</p>
+</header>
+
+<nav class="tabs">
+  <button type="button" class="tab active" data-view="cac">⚔️ CAC</button>
+  <button type="button" class="tab" data-view="tir">🏹 Tir</button>
+</nav>
+
+<!-- ========== CAC ========== -->
+<section id="cac" class="view active">
+  <h2>Corps à corps</h2>
+  <p class="hint">Renseigne les profils, puis résous le combat étape par étape.</p>
+
+  <div class="section">
+    <div class="section-title">Attaquant</div>
+    <div class="grid3">
+      <label>CC<select id="c_a_cc"></select></label>
+      <label>Force<select id="c_a_s"></select></label>
+      <label>Arme<select id="c_a_w"></select></label>
+    </div>
+    <div class="weapon-note" id="c_wnote">—</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Défenseur</div>
+    <div class="grid3">
+      <label>CC<select id="c_d_cc"></select></label>
+      <label>Endurance<select id="c_d_t"></select></label>
+      <label>Sauvegarde<select id="c_d_sv"></select></label>
+    </div>
+    <div class="specials">
+      <label><input type="checkbox" id="c_helmet"> Casque</label>
+      <label><input type="checkbox" id="c_dwarf"> Nain</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scores nécessaires</div>
+    <div class="target-row"><span class="t-label">Toucher</span><span class="t-val" id="c_need_hit">—</span></div>
+    <div class="target-row"><span class="t-label">Blesser</span><span class="t-val" id="c_need_wnd">—</span></div>
+    <div class="target-row"><span class="t-label">Sauvegarde</span><span class="t-val" id="c_need_sv">—</span></div>
+  </div>
+
+  <!-- Step 1: Hit -->
+  <div class="step" id="c_step_hit">
+    <h3>1 · Toucher</h3>
+    <p class="hint" style="margin:0">Lance un D6 (ou entre le résultat). Il faut <strong id="c_hit_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="cac" data-step="hit">🎲 D6</button>
+      <input type="number" id="c_roll_hit" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="c_ok_hit">Valider</button>
+    </div>
+    <div class="outcome" id="c_out_hit"></div>
+  </div>
+
+  <!-- Step 2: Wound -->
+  <div class="step locked" id="c_step_wnd">
+    <h3>2 · Blesser</h3>
+    <p class="hint" style="margin:0">Lance un D6. Il faut <strong id="c_wnd_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="cac" data-step="wnd">🎲 D6</button>
+      <input type="number" id="c_roll_wnd" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="c_ok_wnd">Valider</button>
+    </div>
+    <div class="outcome" id="c_out_wnd"></div>
+  </div>
+
+  <!-- Step 2b: Critical -->
+  <div class="step locked" id="c_step_crit">
+    <h3>2b · Coup Critique</h3>
+    <p class="hint" style="margin:0">6 naturel pour blesser. Choisis le type de critique, puis lance un D6.</p>
+    <div class="crit-mode" style="margin-top:8px;margin-bottom:8px">
+      <label><input type="radio" name="c_critMode" value="basic" checked> Critique de base</label>
+      <label><input type="radio" name="c_critMode" value="weapon"> Selon l’arme</label>
+    </div>
+    <div class="box" id="c_crit_table" style="margin-top:4px;font-size:12.5px"></div>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" id="c_roll_crit">🎲 D6 Critique</button>
+      <input type="number" id="c_roll_crit_val" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="c_ok_crit">Valider</button>
+    </div>
+    <div class="outcome info" id="c_out_crit" style="display:none"></div>
+  </div>
+
+  <!-- Step 3: Save -->
+  <div class="step locked" id="c_step_sv">
+    <h3>3 · Sauvegarde d’armure</h3>
+    <p class="hint" style="margin:0">Le défenseur lance un D6. Il faut <strong id="c_sv_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="cac" data-step="sv">🎲 D6</button>
+      <input type="number" id="c_roll_sv" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="c_ok_sv">Valider</button>
+    </div>
+    <div class="outcome" id="c_out_sv"></div>
+  </div>
+
+  <!-- Injury -->
+  <div class="injury-box" id="c_injury">
+    <h4>Blessure grave (dernière blessure)</h4>
+    <p class="hint" style="margin:0 0 8px">Si c’était la dernière blessure du défenseur, lance un D6 :</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" id="c_roll_inj">🎲 D6 Blessure</button>
+      <input type="number" id="c_roll_inj_val" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="c_ok_inj">Valider</button>
+    </div>
+    <div class="outcome info" id="c_out_inj" style="display:none"></div>
+  </div>
+
+  <div class="history">
+    <h3>Historique (5 derniers)</h3>
+    <div id="c_history"><p class="hist-empty">Aucun combat pour l’instant.</p></div>
+  </div>
+  <button type="button" class="btn btn-muted" id="c_reset">↻ Nouvelle attaque</button>
+</section>
+
+<!-- ========== TIR ========== -->
+<section id="tir" class="view">
+  <h2>Tir</h2>
+  <p class="hint">Même principe : toucher → blesser → sauvegarde → blessure grave.</p>
+
+  <div class="section">
+    <div class="section-title">Tireur</div>
+    <div class="grid">
+      <label>CT<select id="t_ct"></select></label>
+      <label>Modificateur<select id="t_mod"></select></label>
+    </div>
+    <div class="grid" style="margin-top:8px">
+      <label>Force<select id="t_s"></select></label>
+      <label>Arme<select id="t_w"></select></label>
+    </div>
+    <div class="weapon-note" id="t_wnote">—</div>
+    <div class="specials" style="margin-top:8px">
+      <button type="button" class="roll-btn" data-tmod="-1" style="padding:6px 10px;font-size:12px">Couverture −1</button>
+      <button type="button" class="roll-btn" data-tmod="-1" style="padding:6px 10px;font-size:12px">Mouvement −1</button>
+      <button type="button" class="roll-btn" data-tmod="-1" style="padding:6px 10px;font-size:12px">Longue portée −1</button>
+      <button type="button" class="roll-btn" data-tmod="1" style="padding:6px 10px;font-size:12px">Grande cible +1</button>
+      <button type="button" class="roll-btn" data-tmod="0" style="padding:6px 10px;font-size:12px">Reset</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cible</div>
+    <div class="grid">
+      <label>Endurance<select id="t_t"></select></label>
+      <label>Sauvegarde<select id="t_sv"></select></label>
+    </div>
+    <div class="specials">
+      <label><input type="checkbox" id="t_helmet"> Casque</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scores nécessaires</div>
+    <div class="target-row"><span class="t-label">Toucher</span><span class="t-val" id="t_need_hit">—</span></div>
+    <div class="target-row"><span class="t-label">Blesser</span><span class="t-val" id="t_need_wnd">—</span></div>
+    <div class="target-row"><span class="t-label">Sauvegarde</span><span class="t-val" id="t_need_sv">—</span></div>
+  </div>
+
+  <div class="step" id="t_step_hit">
+    <h3>1 · Toucher</h3>
+    <p class="hint" style="margin:0">Il faut <strong id="t_hit_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="tir" data-step="hit">🎲 D6</button>
+      <input type="number" id="t_roll_hit" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="t_ok_hit">Valider</button>
+    </div>
+    <div class="outcome" id="t_out_hit"></div>
+  </div>
+
+  <div class="step locked" id="t_step_wnd">
+    <h3>2 · Blesser</h3>
+    <p class="hint" style="margin:0">Il faut <strong id="t_wnd_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="tir" data-step="wnd">🎲 D6</button>
+      <input type="number" id="t_roll_wnd" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="t_ok_wnd">Valider</button>
+    </div>
+    <div class="outcome" id="t_out_wnd"></div>
+  </div>
+
+  <div class="step locked" id="t_step_crit">
+    <h3>2b · Coup Critique</h3>
+    <p class="hint" style="margin:0">6 naturel pour blesser. Choisis le type de critique, puis lance un D6.</p>
+    <div class="crit-mode" style="margin-top:8px;margin-bottom:8px">
+      <label><input type="radio" name="t_critMode" value="basic" checked> Critique de base</label>
+      <label><input type="radio" name="t_critMode" value="weapon"> Selon l’arme</label>
+    </div>
+    <div class="box" id="t_crit_table" style="margin-top:4px;font-size:12.5px"></div>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" id="t_roll_crit">🎲 D6 Critique</button>
+      <input type="number" id="t_roll_crit_val" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="t_ok_crit">Valider</button>
+    </div>
+    <div class="outcome info" id="t_out_crit" style="display:none"></div>
+  </div>
+
+  <div class="step locked" id="t_step_sv">
+    <h3>3 · Sauvegarde</h3>
+    <p class="hint" style="margin:0">Il faut <strong id="t_sv_need_txt">—</strong>.</p>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" data-flow="tir" data-step="sv">🎲 D6</button>
+      <input type="number" id="t_roll_sv" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="t_ok_sv">Valider</button>
+    </div>
+    <div class="outcome" id="t_out_sv"></div>
+  </div>
+
+  <div class="injury-box" id="t_injury">
+    <h4>Blessure grave (dernière blessure)</h4>
+    <div class="step-actions">
+      <button type="button" class="roll-btn" id="t_roll_inj">🎲 D6 Blessure</button>
+      <input type="number" id="t_roll_inj_val" min="1" max="6" placeholder="?">
+      <button type="button" class="roll-btn" id="t_ok_inj">Valider</button>
+    </div>
+    <div class="outcome info" id="t_out_inj" style="display:none"></div>
+  </div>
+
+  <div class="history">
+    <h3>Historique (5 derniers)</h3>
+    <div id="t_history"><p class="hist-empty">Aucun tir pour l’instant.</p></div>
+  </div>
+  <button type="button" class="btn btn-muted" id="t_reset">↻ Nouveau tir</button>
+</section>
+
+
+
+<div class="install-box">
+  <p><strong>Installer Nkheim</strong></p>
+  <button type="button" class="install-btn" id="installBtn">Installer sur l’écran d’accueil</button>
+  <p id="installText">Menu Chrome ⋮ → Installer l’application (si en ligne).</p>
+  <p class="version">Nkheim · Version 10.6 · Combat</p>
+</div>
+<footer><p>Tu peux entrer les dés à la main ou les lancer dans l’app</p></footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+// PWA
+const manifest={name:"Nkheim",short_name:"Nkheim",start_url:".",display:"standalone",background_color:"#171717",theme_color:"#171717",orientation:"portrait",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23171717' width='100' height='100' rx='20'/><text y='.9em' font-size='70' x='15'>⚔️</text></svg>",sizes:"any",type:"image/svg+xml",purpose:"any maskable"}]};
+const ml=document.getElementById('manifest');
+if(ml) ml.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');if(b)b.style.display='inline-block';});
+document.getElementById('installBtn')?.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('installBtn').style.display='none';});
+
+const HIT=[null,[null,4,4,5,5,5,5,5,5,5,5],[null,3,4,4,4,5,5,5,5,5,5],[null,3,3,4,4,4,4,5,5,5,5],[null,3,3,3,4,4,4,4,4,5,5],[null,3,3,3,3,4,4,4,4,4,4],[null,3,3,3,3,3,4,4,4,4,4],[null,3,3,3,3,3,3,4,4,4,4],[null,3,3,3,3,3,3,3,4,4,4],[null,3,3,3,3,3,3,3,3,4,4],[null,3,3,3,3,3,3,3,3,3,4]];
+const WND=[null,[null,4,5,6,6,null,null,null,null,null,null],[null,3,4,5,6,6,null,null,null,null,null],[null,2,3,4,5,6,6,null,null,null,null],[null,2,2,3,4,5,6,6,null,null,null],[null,2,2,2,3,4,5,6,6,null,null],[null,2,2,2,2,3,4,5,6,6,null],[null,2,2,2,2,2,3,4,5,6,6],[null,2,2,2,2,2,2,3,4,5,6],[null,2,2,2,2,2,2,2,3,4,5],[null,2,2,2,2,2,2,2,2,3,4]];
+
+const MELEE={
+  "Dague":{s:0,type:"bladed",special:"+1 sauvegarde d’armure de l’ennemi."},
+  "Épée":{s:0,type:"bladed",special:"Parry : 6+ annule un hit."},
+  "Hache":{s:0,type:"bladed",special:"Aucun effet spécial."},
+  "Masse / Marteau":{s:0,type:"bludgeon",special:"Contondant."},
+  "Fléau":{s:0,type:"bludgeon",special:"+1 Force. Frappe en dernier si pas chargé."},
+  "Arme à 2 mains":{s:2,type:"bladed",special:"+2 Force. Frappe en dernier."},
+  "Hallebarde":{s:1,type:"bladed",special:"+1 Force."},
+  "Lance":{s:0,type:"bladed",special:"Frappe en premier à la charge."},
+  "Poings":{s:-1,type:"bludgeon",special:"Force −1. Ennemi +1 sauvegarde."}
+};
+const RANGED={
+  "Arc":{s:3,type:"missile",special:"Force 3."},
+  "Arbalète":{s:4,type:"missile",special:"Force 4. Rechargement."},
+  "Pistolet":{s:4,type:"missile",special:"Force 4. Tir en CAC au 1er tour."},
+  "Paire de pistolets":{s:4,type:"missile",special:"Deux tirs."},
+  "Handgun":{s:4,type:"missile",special:"Force 4. Longue portée."},
+  "Couteaux de lancer":{s:0,type:"missile",special:"Force du lanceur."}
+};
+
+const CRIT_HTML={
+  basic:`<h3>Base</h3><ul><li><strong>1-2</strong> 2 blessures, sauvegarde avant doublement</li><li><strong>3-4</strong> 2 blessures, pas de sauvegarde</li><li><strong>5-6</strong> 2 blessures, pas de sauvegarde, +2 blessures graves</li></ul>`,
+  bladed:`<h3>Tranchantes</h3><ul><li><strong>1-2</strong> Pas de sauvegarde d’armure</li><li><strong>3-4</strong> 2 blessures</li><li><strong>5-6</strong> 2 blessures + ignore sauvegardes</li></ul>`,
+  bludgeon:`<h3>Contondantes</h3><ul><li><strong>1-2</strong> Cible ne frappe pas ce tour (si pas encore agi)</li><li><strong>3-4</strong> Ignore armure et casque</li><li><strong>5</strong> Désarmé / arme projetée</li><li><strong>6</strong> 2 blessures + ignore sauvegardes</li></ul>`,
+  missile:`<h3>Tir / jet</h3><ul><li><strong>1-2</strong> Ignore l’armure</li><li><strong>3-4</strong> 2 blessures</li><li><strong>5-6</strong> 2 blessures + ignore sauvegardes</li></ul>`
+};
+
+function resolveCritEffect(type, roll){
+  const t = type || 'basic';
+  if(t==='bladed'){
+    if(roll<=2) return {title:'Critique tranchant (1-2)', text:'Pas de sauvegarde d’armure.', skipSave:true, wounds:1};
+    if(roll<=4) return {title:'Critique tranchant (3-4)', text:'2 blessures.', skipSave:false, wounds:2};
+    return {title:'Critique tranchant (5-6)', text:'2 blessures et ignore les sauvegardes.', skipSave:true, wounds:2};
+  }
+  if(t==='bludgeon'){
+    if(roll<=2) return {title:'Critique contondant (1-2)', text:'La cible ne peut pas frapper ce tour si elle n’a pas encore agi.', skipSave:false, wounds:1};
+    if(roll<=4) return {title:'Critique contondant (3-4)', text:'Ignore les sauvegardes d’armure et de casque.', skipSave:true, wounds:1};
+    if(roll===5) return {title:'Critique contondant (5)', text:'Désarmé — l’arme de la cible est projetée.', skipSave:false, wounds:1};
+    return {title:'Critique contondant (6)', text:'2 blessures et ignore les sauvegardes.', skipSave:true, wounds:2};
+  }
+  if(t==='missile'){
+    if(roll<=2) return {title:'Critique de tir (1-2)', text:'Ignore l’armure.', skipSave:true, wounds:1};
+    if(roll<=4) return {title:'Critique de tir (3-4)', text:'2 blessures.', skipSave:false, wounds:2};
+    return {title:'Critique de tir (5-6)', text:'2 blessures et ignore les sauvegardes.', skipSave:true, wounds:2};
+  }
+  // basic
+  if(roll<=2) return {title:'Partie vitale (1-2)', text:'2 blessures. Sauvegarde d’armure avant le doublement.', skipSave:false, wounds:2, saveFirst:true};
+  if(roll<=4) return {title:'Point exposé (3-4)', text:'2 blessures. Aucune sauvegarde d’armure.', skipSave:true, wounds:2};
+  return {title:'Frappe magistrale (5-6)', text:'2 blessures. Aucune sauvegarde. +2 aux jets de Blessure grave.', skipSave:true, wounds:2, injMod:2};
+}
+
+function $(id){return document.getElementById(id)}
+/** D6 cryptographiquement sûr (Web Crypto API) */
+function d6(){
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return (buf[0] % 6) + 1;
+}
+/** Mode critique pour un flux (cac|tir) */
+function getCritType(flow, weaponType){
+  const name = flow === 'tir' ? 't_critMode' : 'c_critMode';
+  const mode = document.querySelector(`input[name="${name}"]:checked`)?.value || 'basic';
+  if(mode === 'basic') return 'basic';
+  return weaponType || 'basic';
+}
+function refreshCritTable(flow){
+  const weaponType = flow === 'tir' ? (updateTirTargets().type) : (updateCacTargets().type);
+  const ct = getCritType(flow, weaponType);
+  const box = flow === 'tir' ? $('t_crit_table') : $('c_crit_table');
+  const step = flow === 'tir' ? $('t_step_crit') : $('c_step_crit');
+  if(box) box.innerHTML = CRIT_HTML[ct] || CRIT_HTML.basic;
+  if(step) step.dataset.critType = ct;
+}
+function fill(id,vals,fmt){const el=$(id);el.innerHTML='';vals.forEach(v=>{const o=document.createElement('option');o.value=String(v);o.textContent=fmt?fmt(v):String(v);el.appendChild(o)})}
+function fillW(sel,obj){sel.innerHTML='';Object.keys(obj).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)})}
+
+['c_a_cc','c_d_cc','c_a_s','c_d_t','t_ct','t_s','t_t'].forEach(id=>fill(id,[1,2,3,4,5,6,7,8,9,10]));
+fill('c_d_sv',[2,3,4,5,6,7],v=>v===7?'—':v+'+');
+fill('t_sv',[2,3,4,5,6,7],v=>v===7?'—':v+'+');
+const mods=[];for(let i=-6;i<=6;i++)mods.push(i);
+fill('t_mod',mods,v=>(v>0?'+':'')+v);
+fillW($('c_a_w'),MELEE); fillW($('t_w'),RANGED);
+
+$('c_a_cc').value='3';$('c_d_cc').value='3';$('c_a_s').value='3';$('c_d_t').value='3';$('c_d_sv').value='6';
+$('t_ct').value='3';$('t_mod').value='0';$('t_s').value='3';$('t_t').value='3';$('t_sv').value='6';
+
+function fmtNeed(v){if(v===null)return{t:'—',c:'bad'};if(v<=1)return{t:'Auto',c:'ok'};return{t:v+'+',c:''}}
+function toHit(a,d){return(a>=1&&a<=10&&d>=1&&d<=10)?HIT[a][d]:null}
+function toWnd(s,t){return(s>=1&&s<=10&&t>=1&&t<=10)?WND[s][t]:null}
+function svNeed(base,mod){if(base>=7)return null;let t=base+mod;if(t<=1)return 2;if(t>6)return null;return t}
+function sMod(s){if(s<=3)return 0;if(s===4)return-1;if(s===5)return-2;if(s===6)return-3;if(s===7)return-4;if(s===8)return-5;return-6}
+
+function injuryText(roll, helmet){
+  // 1-2 KD, 3-4 Stun, 5-6 OOA — helmet: 4+ turns stun into KD
+  if(roll<=2) return {title:'Mis à terre', text:'Figurine face vers le haut. Peut ramper 2". Se relève à la récupération.'};
+  if(roll<=4){
+    if(helmet){
+      return {title:'Assommé → test Casque', text:'Casque : lance un D6. Sur 4+ → Mis à terre à la place. Sinon Assommé (face vers le bas, ne fait rien, devient Mis à terre à la récupération).'};
+    }
+    return {title:'Assommé', text:'Figurine face vers le bas. Ne fait rien. Devient Mis à terre à la récupération.'};
+  }
+  return {title:'Hors de combat', text:'Retiré de la table. Plus de participation à la partie.'};
+}
+
+// ---- CAC targets ----
+function updateCacTargets(){
+  const aCC=+$('c_a_cc').value, dCC=+$('c_d_cc').value;
+  const baseS=+$('c_a_s').value;
+  const w=MELEE[$('c_a_w').value]||{s:0,type:'bladed',special:''};
+  $('c_wnote').textContent=w.special||'—';
+  const s=Math.min(10,Math.max(1,baseS+(w.s||0)));
+  const t=+$('c_d_t').value, baseSv=+$('c_d_sv').value;
+  const hit=toHit(aCC,dCC), wnd=toWnd(s,t), sv=svNeed(baseSv,sMod(s));
+  const H=fmtNeed(hit), W=fmtNeed(wnd), S=fmtNeed(sv);
+  $('c_need_hit').textContent=H.t; $('c_need_hit').className='t-val '+H.c;
+  $('c_need_wnd').textContent=W.t; $('c_need_wnd').className='t-val '+W.c;
+  $('c_need_sv').textContent=S.t; $('c_need_sv').className='t-val '+S.c;
+  $('c_hit_need_txt').textContent=H.t==='Auto'?'Automatique':(H.t==='—'?'Impossible':H.t);
+  $('c_wnd_need_txt').textContent=W.t==='Auto'?'Automatique':(W.t==='—'?'Impossible':W.t);
+  $('c_sv_need_txt').textContent=S.t==='Auto'?'Automatique':(S.t==='—'?'Aucune / impossible':S.t);
+  return {hit,wnd,sv,type:w.type};
+}
+
+function updateTirTargets(){
+  const ct=+$('t_ct').value, mod=+$('t_mod').value;
+  const w=RANGED[$('t_w').value]||{s:3,type:'missile',special:''};
+  $('t_wnote').textContent=w.special||'—';
+  if(w.s>0) $('t_s').value=String(w.s);
+  const s=+$('t_s').value, t=+$('t_t').value, baseSv=+$('t_sv').value;
+  let hit=7-ct-mod; if(hit>6)hit=null; else if(hit<1)hit=1;
+  const wnd=toWnd(s,t), sv=svNeed(baseSv,sMod(s));
+  const H=fmtNeed(hit), W=fmtNeed(wnd), S=fmtNeed(sv);
+  $('t_need_hit').textContent=H.t; $('t_need_hit').className='t-val '+H.c;
+  $('t_need_wnd').textContent=W.t; $('t_need_wnd').className='t-val '+W.c;
+  $('t_need_sv').textContent=S.t; $('t_need_sv').className='t-val '+S.c;
+  $('t_hit_need_txt').textContent=H.t==='Auto'?'Automatique':(H.t==='—'?'Impossible':H.t);
+  $('t_wnd_need_txt').textContent=W.t==='Auto'?'Automatique':(W.t==='—'?'Impossible':W.t);
+  $('t_sv_need_txt').textContent=S.t==='Auto'?'Automatique':(S.t==='—'?'Aucune / impossible':S.t);
+  return {hit,wnd,sv,type:w.type};
+}
+
+function unlock(el){el.classList.remove('locked')}
+function lock(el){el.classList.add('locked');el.classList.remove('done')}
+function showOut(el, ok, text){
+  el.className='outcome '+(ok?'success':'fail');
+  el.textContent=text;
+  el.style.display='block';
+}
+
+// History
+const histCac = [];
+const histTir = [];
+
+function pushHist(list, entry){
+  list.unshift(entry);
+  if(list.length > 5) list.length = 5;
+}
+
+function renderHist(list, containerId){
+  const box = $(containerId);
+  if(!list.length){
+    box.innerHTML = '<p class="hist-empty">Aucun combat pour l’instant.</p>';
+    return;
+  }
+  box.innerHTML = list.map(e => {
+    const cls = e.success ? 'win' : 'lose';
+    return `<div class="hist-item ${cls}"><div class="hist-title">${e.title}</div><div class="hist-detail">${e.detail}</div></div>`;
+  }).join('');
+}
+
+function summarizeCac(){
+  // Build summary from current state of outcomes
+  const hit = $('c_out_hit').textContent || '';
+  const wnd = $('c_out_wnd').textContent || '';
+  const crit = $('c_out_crit').textContent || '';
+  const sv = $('c_out_sv').textContent || '';
+  const inj = $('c_out_inj').textContent || '';
+  const w = $('c_a_w').value;
+  let success = false;
+  let parts = [];
+  if(hit.includes('Touche')) parts.push('Touche');
+  else { parts.push('Raté'); return {success:false, title:`CAC · ${w}`, detail:parts.join(' → ')}; }
+  if(wnd.includes('Blessé')) parts.push(wnd.includes('Critique')?'Blessé+Crit':'Blessé');
+  else { parts.push('Non blessé'); return {success:false, title:`CAC · ${w}`, detail:parts.join(' → ')}; }
+  if(crit && crit.trim()) parts.push('Critique');
+  if(sv.includes('réussie')) { parts.push('Save OK'); return {success:false, title:`CAC · ${w}`, detail:parts.join(' → ')}; }
+  if(sv.includes('ratée') || sv.includes('ignorée') || sv.includes('Pas de sauvegarde')) {
+    parts.push('Blessure');
+    success = true;
+  }
+  if(inj && inj.trim()) parts.push(inj.replace(/<[^>]+>/g,' ').trim().slice(0,40));
+  return {success, title:`CAC · ${w}`, detail:parts.join(' → ')};
+}
+
+function summarizeTir(){
+  const hit = $('t_out_hit').textContent || '';
+  const wnd = $('t_out_wnd').textContent || '';
+  const crit = $('t_out_crit').textContent || '';
+  const sv = $('t_out_sv').textContent || '';
+  const inj = $('t_out_inj').textContent || '';
+  const w = $('t_w').value;
+  let success = false;
+  let parts = [];
+  if(hit.includes('Touche')) parts.push('Touche');
+  else { parts.push('Raté'); return {success:false, title:`Tir · ${w}`, detail:parts.join(' → ')}; }
+  if(wnd.includes('Blessé')) parts.push(wnd.includes('Critique')?'Blessé+Crit':'Blessé');
+  else { parts.push('Non blessé'); return {success:false, title:`Tir · ${w}`, detail:parts.join(' → ')}; }
+  if(crit && crit.trim()) parts.push('Critique');
+  if(sv.includes('réussie')) { parts.push('Save OK'); return {success:false, title:`Tir · ${w}`, detail:parts.join(' → ')}; }
+  if(sv.includes('ratée') || sv.includes('ignorée') || sv.includes('Pas de sauvegarde')) {
+    parts.push('Blessure');
+    success = true;
+  }
+  if(inj && inj.trim()) parts.push(inj.replace(/<[^>]+>/g,' ').trim().slice(0,40));
+  return {success, title:`Tir · ${w}`, detail:parts.join(' → ')};
+}
+
+function maybeLogCac(force){
+  if(window._cLogged && !force) return;
+  const entry = summarizeCac();
+  if(!entry.detail || entry.detail === '') return;
+  // If already logged, replace first entry (e.g. add injury detail)
+  if(window._cLogged && force && histCac.length){
+    histCac[0] = entry;
+  } else {
+    pushHist(histCac, entry);
+  }
+  window._cLogged = true;
+  renderHist(histCac, 'c_history');
+}
+function maybeLogTir(force){
+  if(window._tLogged && !force) return;
+  const entry = summarizeTir();
+  if(!entry.detail || entry.detail === '') return;
+  if(window._tLogged && force && histTir.length){
+    histTir[0] = entry;
+  } else {
+    pushHist(histTir, entry);
+  }
+  window._tLogged = true;
+  renderHist(histTir, 't_history');
+}
+
+
+
+// CAC resolution
+function resolveCacHit(){
+  const {hit}=updateCacTargets();
+  const roll=+$('c_roll_hit').value;
+  if(!roll||roll<1||roll>6) return;
+  if(hit===null){ showOut($('c_out_hit'),false,'Impossible de toucher'); return; }
+  if(hit<=1 || roll>=hit){
+    showOut($('c_out_hit'),true,`Touche ! (${roll})`);
+    $('c_step_hit').classList.add('done');
+    unlock($('c_step_wnd'));
+  } else {
+    showOut($('c_out_hit'),false,`Raté (${roll}) — fin de l’attaque`);
+    lock($('c_step_wnd')); lock($('c_step_sv'));
+    $('c_injury').classList.remove('show');
+    maybeLogCac();
+  }
+}
+function resolveCacWnd(){
+  const {wnd,type}=updateCacTargets();
+  const roll=+$('c_roll_wnd').value;
+  if(!roll||roll<1||roll>6) return;
+  if(wnd===null){ showOut($('c_out_wnd'),false,'Impossible de blesser'); return; }
+  if(wnd<=1 || roll>=wnd){
+    const isCrit = (roll===6 && wnd<6);
+    showOut($('c_out_wnd'),true, isCrit ? `Blessé avec Critique ! (${roll})` : `Blessé ! (${roll})`);
+    $('c_step_wnd').classList.add('done');
+    if(isCrit){
+      // reset radios to base by default
+      const r = document.querySelector('input[name="c_critMode"][value="basic"]');
+      if(r) r.checked = true;
+      refreshCritTable('cac');
+      unlock($('c_step_crit'));
+      lock($('c_step_sv'));
+    } else {
+      lock($('c_step_crit'));
+      proceedToSave('cac');
+    }
+  } else {
+    showOut($('c_out_wnd'),false,`Non blessé (${roll}) — fin de l’attaque`);
+    lock($('c_step_crit')); lock($('c_step_sv'));
+    $('c_injury').classList.remove('show');
+    maybeLogCac();
+  }
+}
+
+function proceedToSave(flow){
+  const targets = flow==='cac' ? updateCacTargets() : updateTirTargets();
+  const sv = targets.sv;
+  const stepSv = flow==='cac' ? $('c_step_sv') : $('t_step_sv');
+  const outSv = flow==='cac' ? $('c_out_sv') : $('t_out_sv');
+  const injury = flow==='cac' ? $('c_injury') : $('t_injury');
+  // Check if crit already forced skip save
+  const critState = flow==='cac' ? window._cCrit : window._tCrit;
+  if(critState && critState.skipSave){
+    unlock(stepSv);
+    showOut(outSv, false, 'Sauvegarde ignorée par le critique — blessure confirmée');
+    stepSv.classList.add('done');
+    injury.classList.add('show');
+    if(flow==='cac') maybeLogCac(); else maybeLogTir();
+    return;
+  }
+  if(sv===null){
+    unlock(stepSv);
+    showOut(outSv, false, 'Pas de sauvegarde — blessure confirmée');
+    stepSv.classList.add('done');
+    injury.classList.add('show');
+    if(flow==='cac') maybeLogCac(); else maybeLogTir();
+  } else {
+    unlock(stepSv);
+  }
+}
+
+function resolveCacCrit(){
+  const {type}=updateCacTargets();
+  const roll=+$('c_roll_crit_val').value;
+  if(!roll||roll<1||roll>6) return;
+  const ct = getCritType('cac', type);
+  const effect = resolveCritEffect(ct, roll);
+  window._cCrit = effect;
+  const out=$('c_out_crit');
+  out.style.display='block';
+  out.className='outcome info';
+  out.innerHTML=`<strong>${roll} · ${effect.title}</strong><br>${effect.text}${effect.wounds>1?'<br>→ '+effect.wounds+' blessures':''}`;
+  $('c_step_crit').classList.add('done');
+  proceedToSave('cac');
+}
+function resolveCacSv(){
+  const {sv}=updateCacTargets();
+  const roll=+$('c_roll_sv').value;
+  if(sv===null){ $('c_injury').classList.add('show'); return; }
+  if(!roll||roll<1||roll>6) return;
+  if(roll>=sv){
+    showOut($('c_out_sv'),true,`Sauvegarde réussie (${roll}) — aucune blessure`);
+    $('c_injury').classList.remove('show');
+    maybeLogCac();
+  } else {
+    showOut($('c_out_sv'),false,`Sauvegarde ratée (${roll}) — blessure !`);
+    $('c_step_sv').classList.add('done');
+    $('c_injury').classList.add('show');
+  }
+}
+function resolveCacInj(){
+  const roll=+$('c_roll_inj_val').value;
+  if(!roll||roll<1||roll>6) return;
+  const helmet=$('c_helmet').checked;
+  const r=injuryText(roll,helmet);
+  const out=$('c_out_inj');
+  out.style.display='block';
+  out.className='outcome info';
+  out.innerHTML=`<strong>${roll} · ${r.title}</strong><br>${r.text}`;
+  maybeLogCac(true);
+}
+
+// TIR resolution (same pattern)
+function resolveTirHit(){
+  const {hit}=updateTirTargets();
+  const roll=+$('t_roll_hit').value;
+  if(!roll||roll<1||roll>6) return;
+  if(hit===null){ showOut($('t_out_hit'),false,'Impossible de toucher'); return; }
+  if(hit<=1 || roll>=hit){
+    showOut($('t_out_hit'),true,`Touche ! (${roll})`);
+    $('t_step_hit').classList.add('done');
+    unlock($('t_step_wnd'));
+  } else {
+    showOut($('t_out_hit'),false,`Raté (${roll})`);
+    lock($('t_step_wnd')); lock($('t_step_sv'));
+    $('t_injury').classList.remove('show');
+    maybeLogTir();
+  }
+}
+function resolveTirWnd(){
+  const {wnd,type}=updateTirTargets();
+  const roll=+$('t_roll_wnd').value;
+  if(!roll||roll<1||roll>6) return;
+  if(wnd===null){ showOut($('t_out_wnd'),false,'Impossible de blesser'); return; }
+  if(wnd<=1 || roll>=wnd){
+    const isCrit = (roll===6 && wnd<6);
+    showOut($('t_out_wnd'),true, isCrit ? `Blessé avec Critique ! (${roll})` : `Blessé ! (${roll})`);
+    $('t_step_wnd').classList.add('done');
+    if(isCrit){
+      const r = document.querySelector('input[name="t_critMode"][value="basic"]');
+      if(r) r.checked = true;
+      refreshCritTable('tir');
+      unlock($('t_step_crit'));
+      lock($('t_step_sv'));
+    } else {
+      lock($('t_step_crit'));
+      proceedToSave('tir');
+    }
+  } else {
+    showOut($('t_out_wnd'),false,`Non blessé (${roll})`);
+    lock($('t_step_crit')); lock($('t_step_sv'));
+    $('t_injury').classList.remove('show');
+    maybeLogTir();
+  }
+}
+
+function resolveTirCrit(){
+  const {type}=updateTirTargets();
+  const roll=+$('t_roll_crit_val').value;
+  if(!roll||roll<1||roll>6) return;
+  const ct = getCritType('tir', type);
+  const effect = resolveCritEffect(ct, roll);
+  window._tCrit = effect;
+  const out=$('t_out_crit');
+  out.style.display='block';
+  out.className='outcome info';
+  out.innerHTML=`<strong>${roll} · ${effect.title}</strong><br>${effect.text}${effect.wounds>1?'<br>→ '+effect.wounds+' blessures':''}`;
+  $('t_step_crit').classList.add('done');
+  proceedToSave('tir');
+}
+function resolveTirSv(){
+  const {sv}=updateTirTargets();
+  const roll=+$('t_roll_sv').value;
+  if(sv===null){ $('t_injury').classList.add('show'); return; }
+  if(!roll||roll<1||roll>6) return;
+  if(roll>=sv){
+    showOut($('t_out_sv'),true,`Sauvegarde réussie (${roll})`);
+    $('t_injury').classList.remove('show');
+    maybeLogTir();
+  } else {
+    showOut($('t_out_sv'),false,`Sauvegarde ratée (${roll}) — blessure !`);
+    $('t_step_sv').classList.add('done');
+    $('t_injury').classList.add('show');
+  }
+}
+function resolveTirInj(){
+  const roll=+$('t_roll_inj_val').value;
+  if(!roll||roll<1||roll>6) return;
+  const r=injuryText(roll,$('t_helmet').checked);
+  const out=$('t_out_inj');
+  out.style.display='block';
+  out.className='outcome info';
+  out.innerHTML=`<strong>${roll} · ${r.title}</strong><br>${r.text}`;
+  maybeLogTir(true);
+}
+
+function resetCac(){
+  ['c_roll_hit','c_roll_wnd','c_roll_sv','c_roll_inj_val','c_roll_crit_val'].forEach(id=>{if($(id))$(id).value=''});
+  ['c_out_hit','c_out_wnd','c_out_sv','c_out_inj','c_out_crit'].forEach(id=>{const e=$(id);if(e){e.style.display='none';e.textContent=''}});
+  lock($('c_step_wnd')); lock($('c_step_crit')); lock($('c_step_sv'));
+  $('c_step_hit').classList.remove('done');
+  $('c_step_wnd').classList.remove('done');
+  if($('c_step_crit')) $('c_step_crit').classList.remove('done');
+  $('c_step_sv').classList.remove('done');
+  $('c_injury').classList.remove('show');
+  window._cCrit = null;
+  window._cLogged = false;
+}
+function resetTir(){
+  ['t_roll_hit','t_roll_wnd','t_roll_sv','t_roll_inj_val','t_roll_crit_val'].forEach(id=>{if($(id))$(id).value=''});
+  ['t_out_hit','t_out_wnd','t_out_sv','t_out_inj','t_out_crit'].forEach(id=>{const e=$(id);if(e){e.style.display='none';e.textContent=''}});
+  lock($('t_step_wnd')); lock($('t_step_crit')); lock($('t_step_sv'));
+  $('t_step_hit').classList.remove('done');
+  $('t_step_wnd').classList.remove('done');
+  if($('t_step_crit')) $('t_step_crit').classList.remove('done');
+  $('t_step_sv').classList.remove('done');
+  $('t_injury').classList.remove('show');
+  window._tCrit = null;
+  window._tLogged = false;
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===btn.dataset.view));
+  });
+});
+
+// Listeners profiles
+['c_a_cc','c_d_cc','c_a_s','c_d_t','c_d_sv','c_a_w'].forEach(id=>$(id).addEventListener('change',()=>{updateCacTargets();resetCac()}));
+['t_ct','t_mod','t_s','t_t','t_sv','t_w'].forEach(id=>$(id).addEventListener('change',()=>{updateTirTargets();resetTir()}));
+
+// Quick mod tir
+document.querySelectorAll('[data-tmod]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const m=btn.dataset.tmod;
+    if(m==='0') $('t_mod').value='0';
+    else { const c=+$('t_mod').value; $('t_mod').value=String(Math.max(-6,Math.min(6,c+Number(m)))); }
+    updateTirTargets();
+  });
+});
+
+// Roll buttons
+document.querySelectorAll('.roll-btn[data-flow]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const flow=btn.dataset.flow, step=btn.dataset.step;
+    const roll=d6();
+    const map={cac:{hit:'c_roll_hit',wnd:'c_roll_wnd',sv:'c_roll_sv'},tir:{hit:'t_roll_hit',wnd:'t_roll_wnd',sv:'t_roll_sv'}};
+    const id=map[flow][step];
+    $(id).value=roll;
+  });
+});
+$('c_roll_inj').addEventListener('click',()=>{$('c_roll_inj_val').value=d6()});
+$('t_roll_inj').addEventListener('click',()=>{$('t_roll_inj_val').value=d6()});
+
+$('c_ok_hit').addEventListener('click', resolveCacHit);
+$('c_ok_wnd').addEventListener('click', resolveCacWnd);
+$('c_ok_crit').addEventListener('click', resolveCacCrit);
+$('c_ok_sv').addEventListener('click', resolveCacSv);
+$('c_ok_inj').addEventListener('click', resolveCacInj);
+$('t_ok_hit').addEventListener('click', resolveTirHit);
+$('t_ok_wnd').addEventListener('click', resolveTirWnd);
+$('t_ok_crit').addEventListener('click', resolveTirCrit);
+$('t_ok_sv').addEventListener('click', resolveTirSv);
+$('t_ok_inj').addEventListener('click', resolveTirInj);
+$('c_roll_crit').addEventListener('click',()=>{$('c_roll_crit_val').value=d6()});
+$('t_roll_crit').addEventListener('click',()=>{$('t_roll_crit_val').value=d6()});
+$('c_reset').addEventListener('click', resetCac);
+$('t_reset').addEventListener('click', resetTir);
+
+// Crit
+document.querySelectorAll('input[name="c_critMode"]').forEach(r=>{
+  r.addEventListener('change', ()=>refreshCritTable('cac'));
+});
+document.querySelectorAll('input[name="t_critMode"]').forEach(r=>{
+  r.addEventListener('change', ()=>refreshCritTable('tir'));
+});
+updateCacTargets(); updateTirTargets();
+})();
+</script>
+</body>
+</html>
